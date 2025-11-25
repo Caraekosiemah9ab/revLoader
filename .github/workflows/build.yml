@@ -1,42 +1,7 @@
-name: Build revLoader
-
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
-env:
-  BUILD_CONFIGURATION: Release
-
-jobs:
-  build:
-    name: Build revLoader
-    runs-on: windows-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.1
-      
-    - name: Restore NuGet packages
-      run: nuget restore revLoader.sln
-      
     - name: Build Solution
       run: |
-        msbuild revLoader.sln `
+        msbuild revLoader/revLoader.vcxproj `
           /p:Configuration=$env:BUILD_CONFIGURATION `
           /p:Platform=Win32 `
           /p:VisualStudioVersion=15.0 `
           /verbosity:minimal
-          
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: revLoader-build
-        path: |
-          revLoader/**/*.exe
-          revLoader/**/*.dll
-          revLoader/**/*.lib
