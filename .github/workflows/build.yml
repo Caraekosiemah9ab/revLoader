@@ -1,4 +1,4 @@
-name: CI Build
+name: Build revLoader
 
 on:
   push:
@@ -6,34 +6,37 @@ on:
   pull_request:
     branches: [ main, master ]
 
+env:
+  BUILD_CONFIGURATION: Release
+
 jobs:
   build:
-    strategy:
-      matrix:
-        configuration: [Release, Debug]
-        
+    name: Build revLoader
     runs-on: windows-latest
-    name: Build ${{ matrix.configuration }}
-
+    
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Add MSBuild to PATH
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.1
       
-    - name: Build
+    - name: Restore NuGet packages
+      run: nuget restore revLoader.sln
+      
+    - name: Build Solution
       run: |
         msbuild revLoader.sln `
-          /p:Configuration=${{ matrix.configuration }} `
+          /p:Configuration=$env:BUILD_CONFIGURATION `
           /p:Platform=Win32 `
           /p:VisualStudioVersion=15.0 `
-          /maxcpucount:4
+          /verbosity:minimal
           
-    - name: Upload artifacts
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: revLoader-${{ matrix.configuration }}
+        name: revLoader-build
         path: |
-          **/bin/**/*.exe
-          **/bin/**/*.dll
+          revLoader/**/*.exe
+          revLoader/**/*.dll
+          revLoader/**/*.lib
